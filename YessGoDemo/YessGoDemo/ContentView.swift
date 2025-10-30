@@ -3,7 +3,7 @@ import Combine
 
 struct ContentView: View {
     @EnvironmentObject var authService: AuthService
-    
+
     var body: some View {
         Group {
             if authService.isAuthenticated {
@@ -17,7 +17,7 @@ struct ContentView: View {
 
 struct MainTabView: View {
     @State private var selectedTab = 0
-    
+
     var body: some View {
         TabView(selection: $selectedTab) {
             MainPageView()
@@ -26,28 +26,28 @@ struct MainTabView: View {
                     Text("Главная")
                 }
                 .tag(0)
-            
+
             PartnersPageView()
                 .tabItem {
                     Image(systemName: "building.2.fill")
                     Text("Партнеры")
                 }
                 .tag(1)
-            
+
             QRPageView()
                 .tabItem {
                     Image(systemName: "qrcode")
                     Text("QR")
                 }
                 .tag(2)
-            
+
             NotificationsPageView()
                 .tabItem {
                     Image(systemName: "bell.fill")
                     Text("Уведомления")
                 }
                 .tag(3)
-            
+
             MorePageView()
                 .tabItem {
                     Image(systemName: "ellipsis")
@@ -59,12 +59,18 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Placeholder Views
 struct PartnersPageView: View {
     var body: some View {
         NavigationView {
-            Text("Партнеры")
-                .navigationTitle("Партнеры")
+            VStack {
+                Text("Партнеры")
+                    .font(.title)
+                    .padding()
+
+                Text("Здесь будет список партнеров")
+                    .foregroundColor(.gray)
+            }
+            .navigationTitle("Партнеры")
         }
     }
 }
@@ -72,8 +78,21 @@ struct PartnersPageView: View {
 struct QRPageView: View {
     var body: some View {
         NavigationView {
-            Text("QR Код")
-                .navigationTitle("QR Код")
+            VStack {
+                Image(systemName: "qrcode")
+                    .resizable()
+                    .frame(width: 200, height: 200)
+                    .padding()
+
+                Text("QR-сканер")
+                    .font(.title)
+
+                Text("Отсканируйте QR-код у партнера для получения бонусов")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.gray)
+                    .padding()
+            }
+            .navigationTitle("QR Код")
         }
     }
 }
@@ -81,17 +100,60 @@ struct QRPageView: View {
 struct NotificationsPageView: View {
     var body: some View {
         NavigationView {
-            Text("Уведомления")
-                .navigationTitle("Уведомления")
+            VStack {
+                Image(systemName: "bell.fill")
+                    .resizable()
+                    .frame(width: 100, height: 100)
+                    .foregroundColor(Color(hex: "0F6B53"))
+                    .padding()
+
+                Text("Нет новых уведомлений")
+                    .font(.headline)
+
+                Text("Здесь будут отображаться важные уведомления")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.gray)
+                    .padding()
+            }
+            .navigationTitle("Уведомления")
         }
     }
 }
 
 struct MorePageView: View {
+    @EnvironmentObject var authService: AuthService
+
     var body: some View {
         NavigationView {
-            Text("Еще")
-                .navigationTitle("Еще")
+            List {
+                Section(header: Text("Аккаунт")) {
+                    NavigationLink(destination: Text("Профиль")) {
+                        Label("Мой профиль", systemImage: "person.circle")
+                    }
+                    NavigationLink(destination: Text("Настройки")) {
+                        Label("Настройки", systemImage: "gear")
+                    }
+                }
+
+                Section(header: Text("Информация")) {
+                    NavigationLink(destination: Text("О приложении")) {
+                        Label("О приложении", systemImage: "info.circle")
+                    }
+                    NavigationLink(destination: Text("Помощь")) {
+                        Label("Помощь", systemImage: "questionmark.circle")
+                    }
+                }
+
+                Section {
+                    Button(action: {
+                        authService.signOut()
+                    }) {
+                        Label("Выйти", systemImage: "arrow.right.square")
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+            .navigationTitle("Еще")
         }
     }
 }
@@ -104,38 +166,47 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    
+    @State private var cancellables = Set<AnyCancellable>()
+
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                // Логотип
-                Image("logo")
+                Spacer()
+
+                Image(systemName: "leaf.circle.fill")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 80)
-                
+                    .foregroundColor(Color(hex: "0F6B53"))
+
                 Text("YessGo")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "0F6B53"))
-                
-                // Форма входа
+
+                Text("Demo Version")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
                 VStack(spacing: 16) {
                     TextField("Email", text: $email)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
-                    
+                        .padding(.horizontal)
+
                     SecureField("Пароль", text: $password)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
+                        .padding(.horizontal)
+
                     HStack {
                         Toggle("Запомнить меня", isOn: $rememberMe)
                             .toggleStyle(SwitchToggleStyle(tint: Color(hex: "0F6B53")))
-                        
+
                         Spacer()
                     }
-                    
+                    .padding(.horizontal)
+
                     Button(action: signIn) {
                         if isLoading {
                             ProgressView()
@@ -150,15 +221,16 @@ struct LoginView: View {
                     .background(Color(hex: "0F6B53"))
                     .foregroundColor(.white)
                     .cornerRadius(10)
+                    .padding(.horizontal)
                     .disabled(isLoading)
-                    
-                    Button("Регистрация") {
-                        // Навигация к регистрации
+
+                    Button("Войти как демо") {
+                        demoLogin()
                     }
                     .foregroundColor(Color(hex: "0F6B53"))
                 }
-                .padding(.horizontal, 32)
-                
+                .padding(.horizontal, 16)
+
                 Spacer()
             }
             .padding()
@@ -169,16 +241,16 @@ struct LoginView: View {
             }
         }
     }
-    
+
     private func signIn() {
         guard !email.isEmpty && !password.isEmpty else {
             alertMessage = "Заполните все поля"
             showAlert = true
             return
         }
-        
+
         isLoading = true
-        
+
         authService.signIn(email: email, password: password, remember: rememberMe)
             .receive(on: DispatchQueue.main)
             .sink(
@@ -190,13 +262,16 @@ struct LoginView: View {
                     }
                 },
                 receiveValue: { _ in
-                    // Успешный вход
                 }
             )
             .store(in: &cancellables)
     }
-    
-    @State private var cancellables = Set<AnyCancellable>()
+
+    private func demoLogin() {
+        email = "demo@yessgo.com"
+        password = "demo123"
+        authService.isAuthenticated = true
+    }
 }
 
 #Preview {
