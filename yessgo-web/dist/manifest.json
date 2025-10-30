@@ -1,0 +1,31 @@
+{
+  "name": "YessGo - Loyalty App",
+  "short_name": "YessGo",
+  "description": "YessGo Loyalty Program - Earn and redeem YessCoins",
+  "theme_color": "#0F6B53",
+  "background_color": "#F4F6F8",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
